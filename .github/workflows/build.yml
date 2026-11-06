@@ -22,19 +22,26 @@ jobs:
           flutter-version: '3.19.6'
           channel: 'stable'
 
-      - name: Generate Native Android Files
-        run: flutter create . --platforms=android --org com.example.ubercalc
-
-      - name: Get Dependencies
-        run: flutter pub get
+      - name: Create Clean Project & Inject Files
+        run: |
+          flutter create app_temp --org com.example.ubercalc --platforms=android
+          cp main.dart app_temp/lib/main.dart
+          cp pubspec.yaml app_temp/pubspec.yaml
+          if [ -f "AndroidManifest.xml" ]; then
+            cp AndroidManifest.xml app_temp/android/app/src/main/AndroidManifest.xml
+          fi
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          cd app_temp
+          flutter pub get
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: app_temp/build/app/outputs/flutter-apk/app-release.apk
+          
           
           
